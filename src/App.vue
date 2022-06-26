@@ -1,12 +1,23 @@
 <template>
-  <div id="app" style="color: white">
-    <ol>
-      <li>
-        Browse to a folder to process. <button @click="browse">Browse</button>
-      </li>
-    </ol>
-    <button v-on:click="recognize">recognize</button>
-    <img id="text-img" alt="Vue logo" src="./assets/testocr.png" />
+  <div id="app" style="display: flex; color: white">
+    <div style="background: #002; width: 750px; height: 500px">
+      <div>Input the folder to process images to text.</div>
+      <div>
+        <input
+          id="txtPath"
+          type="text"
+          style="width: 100%"
+          @input="changeHandler"
+          @change="changeHandler"
+          :value="ocrPath"
+        />
+      </div>
+      <button @click="browse">Process</button>
+    </div>
+    <div>
+      <button v-on:click="recognize">recognize</button>
+      <img id="text-img" alt="Vue logo" src="./assets/testocr.png" />
+    </div>
   </div>
 </template>
 
@@ -20,6 +31,14 @@ const worker = createWorker({
 export default {
   name: "app",
   methods: {
+    changeHandler: function (evt) {
+      //console.log("path:", evt.target.value);
+      this.ocrPath = evt.target.value;
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        localStorage.setItem("KEY_OCR_PATH", this.ocrPath);
+      }
+    },
     connectStreamSocket: function () {
       //console.log("connectStreamSocket");
       var refThis = this;
@@ -60,6 +79,7 @@ export default {
       if (this.streamSocket.readyState === this.SOCKET_OPEN) {
         let sendJson = {
           method: "readdir",
+          path: this.ocrPath,
         };
         console.log("send", JSON.stringify(sendJson));
         this.streamSocket.send(JSON.stringify(sendJson));
@@ -81,9 +101,18 @@ export default {
     },
   },
   data() {
+    let ocrPath = undefined;
+    let localStorage = window.localStorage;
+    if (localStorage) {
+      ocrPath = localStorage.getItem("KEY_OCR_PATH");
+    }
+    if (!ocrPath) {
+      ocrPath = ".";
+    }
     return {
       SOCKET_OPEN: 1,
       streamSocket: undefined,
+      ocrPath: ocrPath,
     };
   },
 };
