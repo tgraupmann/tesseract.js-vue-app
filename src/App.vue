@@ -50,7 +50,25 @@ export default {
         streamSocket.onopen = function (event) {
           //console.log("Stream socket opened");
           streamSocket.onmessage = function (evt) {
-            console.log("onmessage", evt);
+            //console.log("onmessage", evt.data);
+            if (evt.data) {
+              let json = JSON.parse(evt.data);
+              if (json) {
+                switch (json.method) {
+                  case "readdir":
+                    //console.log("json", JSON.stringify(json, null, 2));
+                    this.files = json.files;
+                    let localStorage = window.localStorage;
+                    if (localStorage) {
+                      localStorage.setItem(
+                        "KEY_OCR_FILES",
+                        JSON.stringify(this.files)
+                      );
+                    }
+                    break;
+                }
+              }
+            }
           };
         };
         streamSocket.onclose = function (event) {
@@ -105,8 +123,14 @@ export default {
   data() {
     let ocrPath = undefined;
     let localStorage = window.localStorage;
+    let files = [];
     if (localStorage) {
       ocrPath = localStorage.getItem("KEY_OCR_PATH");
+      let strFiles = localStorage.getItem("KEY_OCR_FILES");
+      if (strFiles) {
+        files = JSON.parse(strFiles);
+        console.log("files", JSON.stringify(files, null, 2));
+      }
     }
     if (!ocrPath) {
       ocrPath = ".";
@@ -115,6 +139,7 @@ export default {
       SOCKET_OPEN: 1,
       streamSocket: undefined,
       ocrPath: ocrPath,
+      files: files,
     };
   },
 };
