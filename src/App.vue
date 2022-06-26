@@ -23,7 +23,13 @@
       <img id="txtImg" style="display: none" width="100%" />
       <textarea
         id="txtResult"
-        style="position: absolute; left: 40%; top: 10%; width: 50%; height: 50%"
+        style="
+          position: absolute;
+          right: 0px;
+          bottom: 0px;
+          width: 50%;
+          height: 50%;
+        "
         cols="40"
         rows="10"
       >
