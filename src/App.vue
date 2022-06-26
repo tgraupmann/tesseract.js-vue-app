@@ -1,6 +1,6 @@
 <template>
   <div id="app" style="display: flex; color: white">
-    <div style="background: #002; width: 750px; height: 500px">
+    <div style="background: #002; min-width: 500px; min-height: 500px">
       <div>Input the folder to process images to text.</div>
       <div>
         <input
@@ -12,11 +12,22 @@
           :value="ocrPath"
         />
       </div>
-      <button @click="browse">Process</button>
+      <button @click="scan">Scan</button>
+      <div>Files:</div>
+      <div v-for="(file, index) in files" :key="index" style="padding: 4px">
+        <span>{{ file }}</span>
+        <button @click="process(file)">Process</button>
+      </div>
     </div>
     <div>
-      <button v-on:click="recognize">recognize</button>
-      <img id="text-img" alt="Vue logo" src="./assets/testocr.png" />
+      <img id="txtImg" style="display: none" width="100%" />
+      <textarea
+        id="txtResult"
+        style="position: absolute; left: 40%; top: 10%; width: 50%; height: 50%"
+        cols="40"
+        rows="10"
+      >
+      </textarea>
     </div>
   </div>
 </template>
@@ -55,6 +66,31 @@ export default {
               let json = JSON.parse(evt.data);
               if (json) {
                 switch (json.method) {
+                  case "readfile":
+                    const img = document.getElementById("txtImg");
+                    console.log("Loading src", json.src);
+                    //console.log("data", json.data);
+                    img.src = "data:image/png;base64," + json.data;
+                    img.style.display = "";
+                    var recognize = async function () {
+                      const img = document.getElementById("txtImg");
+                      //console.log(img);
+                      await worker.load();
+                      await worker.loadLanguage("eng");
+                      await worker.initialize("eng", OEM.LSTM_ONLY);
+                      await worker.setParameters({
+                        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+                      });
+                      const {
+                        data: { text },
+                      } = await worker.recognize(img);
+                      console.log(text);
+
+                      let txtResult = document.getElementById("txtResult");
+                      txtResult.value = text;
+                    };
+                    recognize();
+                    break;
                   case "readdir":
                     //console.log("json", JSON.stringify(json, null, 2));
                     this.files = json.files;
@@ -84,8 +120,8 @@ export default {
         refThis.streamSocket = streamSocket;
       }
     },
-    browse: function () {
-      console.log("Open dialog");
+    scan: function () {
+      console.log("Scan Files");
 
       //console.log("streamSocket", this.streamSocket);
       if (!this.streamSocket) {
@@ -102,19 +138,20 @@ export default {
         this.streamSocket.send(JSON.stringify(sendJson));
       }
     },
-    recognize: async () => {
-      const img = document.getElementById("text-img");
-      console.log(img);
-      await worker.load();
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng", OEM.LSTM_ONLY);
-      await worker.setParameters({
-        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-      });
-      const {
-        data: { text },
-      } = await worker.recognize(img);
-      console.log(text);
+    process: function (file) {
+      let src = this.ocrPath + "\\" + file;
+      console.log("src", src);
+
+      let txtResult = document.getElementById("txtResult");
+      txtResult.value = "Processing... " + src;
+
+      let sendJson = {
+        method: "readfile",
+        src: src,
+      };
+      console.log("send", JSON.stringify(sendJson));
+      this.streamSocket.send(JSON.stringify(sendJson));
+      // read bytes on server and receive on socket message
     },
   },
   created() {
