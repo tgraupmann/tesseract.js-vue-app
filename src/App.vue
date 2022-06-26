@@ -71,7 +71,6 @@ export default {
 
       //console.log("streamSocket", this.streamSocket);
       if (!this.streamSocket) {
-        this.connectStreamSocket();
         return;
       }
 
@@ -99,6 +98,9 @@ export default {
       } = await worker.recognize(img);
       console.log(text);
     },
+  },
+  created() {
+    this.connectStreamSocket();
   },
   data() {
     let ocrPath = undefined;
