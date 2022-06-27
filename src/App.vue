@@ -1,7 +1,21 @@
 <template>
   <div id="app" style="display: flex; color: white">
-    <div style="background: #002; min-width: 500px; min-height: 500px">
-      <div>Input the folder to process images to text.</div>
+    <div
+      style="
+        background: #002;
+        min-width: 500px;
+        min-height: 500px;
+        text-align: left;
+      "
+    >
+      <div>Search:</div>
+      <div>
+        <input id="txtSearch" type="text" style="width: 100%" />
+      </div>
+      <br />
+
+      <div>Scan:</div>
+      <div>Provide a path to search in order to process images to text.</div>
       <div>
         <input
           id="txtPath"
@@ -12,11 +26,24 @@
           :value="ocrPath"
         />
       </div>
-      <button @click="scan">Scan</button>
-      <div>Files:</div>
+      <br />
+
+      <div>
+        <span>Files:</span>
+        &nbsp;
+        <button @click="scan">Scan</button>
+        &nbsp;
+        <button @click="autoScan">Auto</button>
+      </div>
+
       <div v-for="(file, index) in files" :key="index" style="padding: 4px">
-        <span>{{ file }}</span>
         <button @click="process(file)">Process</button>
+        <span v-show="processed(file)"
+          >&nbsp;
+          <u style="cursor: pointer; color: #0f0" @click="showText(file)">T</u>
+        </span>
+        &nbsp;
+        <u>{{ file }}</u>
       </div>
     </div>
     <div>
@@ -69,7 +96,7 @@ export default {
           streamSocket.onmessage = function (evt) {
             //console.log("onmessage", evt.data);
             if (evt.data) {
-              let json = JSON.parse(evt.data);
+              var json = JSON.parse(evt.data);
               if (json) {
                 switch (json.method) {
                   case "readfile":
@@ -94,6 +121,12 @@ export default {
 
                       let txtResult = document.getElementById("txtResult");
                       txtResult.value = text;
+
+                      let key = json.src;
+                      let localStorage = window.localStorage;
+                      if (localStorage) {
+                        localStorage.setItem(key, text);
+                      }
                     };
                     recognize();
                     break;
@@ -142,6 +175,27 @@ export default {
         };
         console.log("send", JSON.stringify(sendJson));
         this.streamSocket.send(JSON.stringify(sendJson));
+      }
+    },
+    autoScan: function () {},
+    processed: function (file) {
+      let key = this.ocrPath + "\\" + file;
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        if (localStorage.getItem(key)) {
+          return true;
+        }
+      }
+      return false;
+    },
+    showText: function (file) {
+      let key = this.ocrPath + "\\" + file;
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        if (localStorage.getItem(key)) {
+          let txtResult = document.getElementById("txtResult");
+          txtResult.value = localStorage.getItem(key);
+        }
       }
     },
     process: function (file) {
