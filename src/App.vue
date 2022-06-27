@@ -8,33 +8,34 @@
         text-align: left;
       "
     >
-      <div>Search:</div>
+      <div>SEARCH:</div>
       <div>
         <input id="txtSearch" type="text" style="width: 100%" />
       </div>
       <br />
 
-      <div>Scan:</div>
+      <div>SCAN:</div>
       <div>Provide a path to search in order to process images to text.</div>
-      <div>
-        <input
-          id="txtPath"
-          type="text"
-          style="width: 100%"
-          @input="changeHandler"
-          @change="changeHandler"
-          :value="ocrPath"
-        />
-      </div>
+      <input
+        id="txtPath"
+        type="text"
+        style="width: 100%"
+        @input="changeHandler"
+        @change="changeHandler"
+        :value="ocrPath"
+      />
+      <br />
       <br />
 
-      <div>
-        <span>Files:</span>
-        &nbsp;
-        <button @click="scan">Scan</button>
-        &nbsp;
-        <button @click="autoScan">Auto</button>
-      </div>
+      <center>
+        <button style="margin: 5px; padding: 10px" @click="scan">
+          Scan Folder For Images
+        </button>
+        <button style="margin: 5px; padding: 10px" @click="autoProcess">
+          Auto Process Files
+        </button>
+      </center>
+      <div>FILES:</div>
 
       <div v-for="(file, index) in files" :key="index" style="padding: 4px">
         <button @click="process(file)">Process</button>
@@ -127,6 +128,9 @@ export default {
                       if (localStorage) {
                         localStorage.setItem(key, text);
                       }
+                      if (refThis.autoIndex != -1) {
+                        refThis.autoProcess();
+                      }
                     };
                     recognize();
                     break;
@@ -161,6 +165,7 @@ export default {
     },
     scan: function () {
       console.log("Scan Files");
+      this.autoIndex = -1;
 
       //console.log("streamSocket", this.streamSocket);
       if (!this.streamSocket) {
@@ -177,7 +182,20 @@ export default {
         this.streamSocket.send(JSON.stringify(sendJson));
       }
     },
-    autoScan: function () {},
+    autoProcess: function () {
+      if (this.autoIndex < 0) {
+        this.autoIndex = 0;
+      }
+      for (let i = this.autoIndex; i < this.files.length; ++i) {
+        let file = this.files[i];
+        if (this.processed(file)) {
+          continue;
+        }
+        console.log("Processing", i);
+        this.process(file);
+        break;
+      }
+    },
     processed: function (file) {
       let key = this.ocrPath + "\\" + file;
       let localStorage = window.localStorage;
@@ -237,6 +255,7 @@ export default {
       streamSocket: undefined,
       ocrPath: ocrPath,
       files: files,
+      autoIndex: -1,
     };
   },
 };
