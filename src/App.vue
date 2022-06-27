@@ -12,6 +12,8 @@
         background: #888;
       "
     >
+      <a id="anchorDownload" style="display: none"></a>
+      <input id="inputImport" type="file" style="display: none" />
       <div style="background: #002; padding: 10px">
         <div>SEARCH:</div>
         <div>
@@ -24,6 +26,17 @@
             :value="search"
           />
         </div>
+      </div>
+
+      <div style="background: #002; padding: 10px">
+        <center>
+          <button style="margin: 5px; padding: 10px" @click="textImport">
+            Import
+          </button>
+          <button style="margin: 5px; padding: 10px" @click="textExport">
+            Export
+          </button>
+        </center>
       </div>
 
       <div style="background: #002; padding: 10px">
@@ -120,6 +133,7 @@ export default {
         localStorage.setItem("KEY_OCR_PATH", this.ocrPath);
       }
     },
+
     connectStreamSocket: function () {
       //console.log("connectStreamSocket");
       var refThis = this;
@@ -260,6 +274,81 @@ export default {
     processed: function (file) {
       let key = this.ocrPath + "\\" + file;
       return this.processedKey(key);
+    },
+    textImport: function () {
+      let refThis = this;
+      let inputImport = document.getElementById("inputImport");
+      if (inputImport) {
+        inputImport.onchange = (e) => {
+          if (e && e.target && e.target.files) {
+            let file = e.target.files[0];
+            if (file) {
+              //console.log(file);
+              let reader = new FileReader();
+              reader.readAsText(file, "UTF-8");
+              // read file
+              reader.onload = (readerEvent) => {
+                let localStorage = window.localStorage;
+                if (
+                  readerEvent &&
+                  readerEvent.target &&
+                  readerEvent.target.result &&
+                  localStorage
+                ) {
+                  let content = readerEvent.target.result;
+                  //console.log(content);
+                  let json = JSON.parse(content);
+                  if (json) {
+                    let keys = Object.keys(json);
+                    for (let i = 0; i < keys.length; ++i) {
+                      let key = keys[i];
+                      //console.log("key", key);
+                      localStorage.setItem(key, json[key]);
+                    }
+                    refThis.displayFiles = [];
+                    setTimeout(function () {
+                      refThis.displayFiles = refThis.files;
+                    }, 0);
+                  }
+                }
+              };
+            }
+          }
+        };
+        inputImport.click();
+      }
+    },
+    textExport: function () {
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        var results = {};
+        for (let i = 0; i < this.files.length; ++i) {
+          let file = this.files[i];
+          let key = this.ocrPath + "\\" + file;
+          let text = localStorage.getItem(key);
+          if (text) {
+            results[key] = text;
+          }
+        }
+
+        let anchorDownload = document.getElementById("anchorDownload");
+        if (anchorDownload) {
+          anchorDownload.setAttribute(
+            "href",
+            "data:text/plain;charset=utf-8," +
+              encodeURIComponent(JSON.stringify(results, null, 2))
+          );
+          anchorDownload.setAttribute("download", "ocr.json");
+
+          if (document.createEvent) {
+            var event = document.createEvent("MouseEvents");
+            event.initEvent("click", true, true);
+            anchorDownload.dispatchEvent(event);
+          } else {
+            anchorDownload.click();
+          }
+        }
+      }
     },
     processSearch: function (file) {
       let key = this.ocrPath + "\\" + file;
