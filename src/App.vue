@@ -1,5 +1,8 @@
 <template>
-  <div id="app" style="display: flex; background: #333; color: white; height: 100%">
+  <div
+    id="app"
+    style="display: flex; background: #333; color: white; height: 100%"
+  >
     <div
       style="
         display: flex;
@@ -70,13 +73,27 @@
     </div>
     <div>
       <img id="txtImg" style="display: none" width="100%" />
-      <textarea
-        id="txtResult"
-        style="position: absolute; right: 0px; bottom: 0px; width: 50%; height: 50%"
-        cols="40"
-        rows="10"
+      <div
+        style="
+          position: absolute;
+          right: 0px;
+          bottom: 0px;
+          width: 50%;
+          height: 50%;
+          background: #003;
+        "
       >
-      </textarea>
+        <div style="display: flex; flex-direction: column; height: 100%">
+          <progress
+            style="width: 100%; height: 30px"
+            min="0"
+            max="100"
+            :value="progress"
+          ></progress>
+
+          <textarea id="txtResult" style="height: 100%" rows="10"> </textarea>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -84,9 +101,6 @@
 <script>
 /* eslint-disable */
 import { createWorker, PSM, OEM } from "tesseract.js";
-const worker = createWorker({
-  logger: (m) => console.log(m),
-});
 
 export default {
   name: "app",
@@ -124,15 +138,15 @@ export default {
                     var recognize = async function () {
                       const img = document.getElementById("txtImg");
                       //console.log(img);
-                      await worker.load();
-                      await worker.loadLanguage("eng");
-                      await worker.initialize("eng", OEM.LSTM_ONLY);
-                      await worker.setParameters({
+                      await refThis.worker.load();
+                      await refThis.worker.loadLanguage("eng");
+                      await refThis.worker.initialize("eng", OEM.LSTM_ONLY);
+                      await refThis.worker.setParameters({
                         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
                       });
                       const {
                         data: { text },
-                      } = await worker.recognize(img);
+                      } = await refThis.worker.recognize(img);
                       console.log(text);
 
                       let txtResult = document.getElementById("txtResult");
@@ -152,7 +166,10 @@ export default {
                         refThis.displayFiles = files;
                       }, 0);
                     };
-                    if (!refThis.processedKey(json.src)) {
+                    if (refThis.processedKey(json.src)) {
+                      refThis.progress = 100;
+                    } else {
+                      refThis.progress = 0;
                       recognize();
                     }
                     break;
@@ -161,7 +178,10 @@ export default {
                     this.files = json.files;
                     let localStorage = window.localStorage;
                     if (localStorage) {
-                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(json.files));
+                      localStorage.setItem(
+                        "KEY_OCR_FILES",
+                        JSON.stringify(json.files)
+                      );
                     }
                     this.displayFiles = [];
                     setTimeout(function () {
@@ -266,6 +286,8 @@ export default {
       }
     },
     process: function (file) {
+      this.progress = 0;
+
       let txtResult = document.getElementById("txtResult");
 
       let key = this.ocrPath + "\\" + file;
@@ -313,6 +335,15 @@ export default {
     if (!ocrPath) {
       ocrPath = ".";
     }
+    var refThis = this;
+    const worker = createWorker({
+      logger: (m) => {
+        console.log(m);
+        if (m.progress) {
+          refThis.progress = Math.round(m.progress * 100);
+        }
+      },
+    });
     return {
       SOCKET_OPEN: 1,
       streamSocket: undefined,
@@ -321,6 +352,8 @@ export default {
       displayFiles: files,
       autoIndex: -1,
       search: undefined,
+      progress: 0,
+      worker: worker,
     };
   },
 };
