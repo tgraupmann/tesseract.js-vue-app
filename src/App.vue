@@ -1,8 +1,5 @@
 <template>
-  <div
-    id="app"
-    style="display: flex; background: #333; color: white; height: 100%"
-  >
+  <div id="app" style="display: flex; background: #333; color: white; height: 100%">
     <div
       style="
         display: flex;
@@ -30,12 +27,8 @@
 
       <div style="background: #002; padding: 10px">
         <center>
-          <button style="margin: 5px; padding: 10px" @click="textImport">
-            Import
-          </button>
-          <button style="margin: 5px; padding: 10px" @click="textExport">
-            Export
-          </button>
+          <button style="margin: 5px; padding: 10px" @click="textImport">Import</button>
+          <button style="margin: 5px; padding: 10px" @click="textExport">Export</button>
         </center>
       </div>
 
@@ -103,14 +96,7 @@
           background: #003;
         "
       >
-        <div
-          style="
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            padding: 10px;
-          "
-        >
+        <div style="display: flex; flex-direction: column; height: 100%; padding: 10px">
           <progress
             style="width: 100%; height: 30px"
             min="0"
@@ -465,8 +451,8 @@ export default {
     var refThis = this;
     const worker = createWorker({
       logger: (m) => {
-        console.log(m);
-        if (m.progress) {
+        //console.log(m);
+        if (m.status == "recognizing text" && m.progress) {
           refThis.progress = Math.round(m.progress * 100);
         }
       },
