@@ -1,13 +1,6 @@
 <template>
   <div id="app" style="display: flex; color: white">
-    <div
-      style="
-        background: #002;
-        min-width: 500px;
-        min-height: 500px;
-        text-align: left;
-      "
-    >
+    <div style="background: #002; min-width: 500px; min-height: 500px; text-align: left">
       <div>SEARCH:</div>
       <div>
         <input id="txtSearch" type="text" style="width: 100%" />
@@ -28,7 +21,7 @@
       <br />
 
       <center>
-        <button style="margin: 5px; padding: 10px" @click="scan">
+        <button style="margin: 5px; padding: 10px" @click="scanFolder">
           Scan Folder For Images
         </button>
         <button style="margin: 5px; padding: 10px" @click="autoProcess">
@@ -51,13 +44,7 @@
       <img id="txtImg" style="display: none" width="100%" />
       <textarea
         id="txtResult"
-        style="
-          position: absolute;
-          right: 0px;
-          bottom: 0px;
-          width: 50%;
-          height: 50%;
-        "
+        style="position: absolute; right: 0px; bottom: 0px; width: 50%; height: 50%"
         cols="40"
         rows="10"
       >
@@ -131,18 +118,23 @@ export default {
                       if (refThis.autoIndex != -1) {
                         refThis.autoProcess();
                       }
+                      var files = refThis.files;
+                      refThis.files = [];
+                      setTimeout(function () {
+                        refThis.files = files;
+                      }, 0);
                     };
                     recognize();
                     break;
                   case "readdir":
                     //console.log("json", JSON.stringify(json, null, 2));
-                    this.files = json.files;
+                    refThis.files = [];
+                    setTimeout(function () {
+                      refThis.files = json.files;
+                    }, 0);
                     let localStorage = window.localStorage;
                     if (localStorage) {
-                      localStorage.setItem(
-                        "KEY_OCR_FILES",
-                        JSON.stringify(this.files)
-                      );
+                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(this.files));
                     }
                     break;
                 }
@@ -163,9 +155,10 @@ export default {
         refThis.streamSocket = streamSocket;
       }
     },
-    scan: function () {
+    scanFolder: function () {
       console.log("Scan Files");
       this.autoIndex = -1;
+      this.files = [];
 
       //console.log("streamSocket", this.streamSocket);
       if (!this.streamSocket) {
