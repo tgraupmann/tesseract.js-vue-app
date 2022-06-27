@@ -128,14 +128,14 @@ export default {
                     break;
                   case "readdir":
                     //console.log("json", JSON.stringify(json, null, 2));
+                    let localStorage = window.localStorage;
+                    if (localStorage) {
+                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(json.files));
+                    }
                     refThis.files = [];
                     setTimeout(function () {
                       refThis.files = json.files;
                     }, 0);
-                    let localStorage = window.localStorage;
-                    if (localStorage) {
-                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(this.files));
-                    }
                     break;
                 }
               }
@@ -235,9 +235,13 @@ export default {
     if (localStorage) {
       ocrPath = localStorage.getItem("KEY_OCR_PATH");
       let strFiles = localStorage.getItem("KEY_OCR_FILES");
-      if (strFiles) {
-        files = JSON.parse(strFiles);
-        //console.log("files", JSON.stringify(files, null, 2));
+      try {
+        if (strFiles) {
+          files = JSON.parse(strFiles);
+          //console.log("files", JSON.stringify(files, null, 2));
+        }
+      } catch {
+        files = [];
       }
     }
     if (!ocrPath) {
