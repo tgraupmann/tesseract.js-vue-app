@@ -1,61 +1,70 @@
 <template>
-  <div id="app" style="display: flex; color: white">
+  <div id="app" style="display: flex; background: #333; color: white; height: 100%">
     <div
       style="
-        background: #002;
-        min-width: 500px;
-        min-height: 500px;
-        text-align: left;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+        min-width: 400px;
       "
     >
-      <div>SEARCH:</div>
-      <div>
+      <div style="background: #002">
+        <div>SEARCH:</div>
+        <div>
+          <input
+            id="txtSearch"
+            type="text"
+            style="margin: 0px; padding: 0px; width: 100%"
+            @input="filterHandler"
+            @change="filterHandler"
+            :value="search"
+          />
+        </div>
+      </div>
+
+      <div style="background: #002">
+        <div>SCAN:</div>
+        <div>Provide a path to search in order to process images to text.</div>
         <input
-          id="txtSearch"
+          id="txtPath"
           type="text"
-          style="width: 100%"
-          @input="filterHandler"
-          @change="filterHandler"
-          :value="search"
+          style="margin: 0px; padding: 0px; width: 100%"
+          @input="changeHandler"
+          @change="changeHandler"
+          :value="ocrPath"
         />
       </div>
-      <br />
 
-      <div>SCAN:</div>
-      <div>Provide a path to search in order to process images to text.</div>
-      <input
-        id="txtPath"
-        type="text"
-        style="width: 100%"
-        @input="changeHandler"
-        @change="changeHandler"
-        :value="ocrPath"
-      />
-      <br />
-      <br />
+      <div style="background: #002">
+        <center>
+          <button style="margin: 5px; padding: 10px" @click="scanFolder">
+            Scan Folder For Images
+          </button>
+          <button style="margin: 5px; padding: 10px" @click="autoProcess">
+            Auto Process Files
+          </button>
+        </center>
+      </div>
 
-      <center>
-        <button style="margin: 5px; padding: 10px" @click="scanFolder">
-          Scan Folder For Images
-        </button>
-        <button style="margin: 5px; padding: 10px" @click="autoProcess">
-          Auto Process Files
-        </button>
-      </center>
-      <div>FILES: ({{ this.files.length }})</div>
+      <div style="background: #002">
+        <div>FILES: ({{ this.files.length }})</div>
 
-      <div v-for="(file, index) in displayFiles" :key="index">
-        <div
-          v-show="!search || processSearch(file)"
-          style="cursor: pointer; background: #003333; padding: 4px"
-          @click="process(file)"
-        >
-          <span v-show="processed(file)"
-            >&nbsp;
-            <u style="color: #0f0" @click="showText(file)">T</u>
-          </span>
-          &nbsp;
-          <u>{{ file }}</u>
+        <div style="max-height: 600px; overflow: scroll">
+          <div v-for="(file, index) in displayFiles" :key="index">
+            <div
+              v-show="!search || processSearch(file)"
+              style="cursor: pointer; padding: 4px"
+              @click="process(file)"
+            >
+              <span v-show="processed(file)"
+                >&nbsp;
+                <u style="color: #0f0" @click="showText(file)">T</u>
+              </span>
+              &nbsp;
+              <u>{{ file }}</u>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -63,13 +72,7 @@
       <img id="txtImg" style="display: none" width="100%" />
       <textarea
         id="txtResult"
-        style="
-          position: absolute;
-          right: 0px;
-          bottom: 0px;
-          width: 50%;
-          height: 50%;
-        "
+        style="position: absolute; right: 0px; bottom: 0px; width: 50%; height: 50%"
         cols="40"
         rows="10"
       >
@@ -158,10 +161,7 @@ export default {
                     this.files = json.files;
                     let localStorage = window.localStorage;
                     if (localStorage) {
-                      localStorage.setItem(
-                        "KEY_OCR_FILES",
-                        JSON.stringify(json.files)
-                      );
+                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(json.files));
                     }
                     this.displayFiles = [];
                     setTimeout(function () {
@@ -326,13 +326,4 @@ export default {
 };
 </script>
 
-<style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style></style>
