@@ -42,7 +42,9 @@ wss.on('connection', function connection(ws) {
               console.log('readdir dir', dir);
               for (let filename of dir) {
                 console.log('readdir filename', filename);
-                results.files.push(filename);
+                if (filename.endsWith('.png')) {
+                  results.files.push(filename);
+                }
               }
               //console.log('send', JSON.stringify(results, null, 2));
               ws.send(JSON.stringify(results));

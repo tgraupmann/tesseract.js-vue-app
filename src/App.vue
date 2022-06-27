@@ -36,12 +36,7 @@
         <button @click="autoScan">Auto</button>
       </div>
 
-      <div
-        v-for="(file, index) in files"
-        :key="index"
-        style="padding: 4px"
-        v-if="file.endsWith('.png')"
-      >
+      <div v-for="(file, index) in files" :key="index" style="padding: 4px">
         <button @click="process(file)">Process</button>
         <span v-show="processed(file)"
           >&nbsp;
@@ -231,7 +226,7 @@ export default {
       let strFiles = localStorage.getItem("KEY_OCR_FILES");
       if (strFiles) {
         files = JSON.parse(strFiles);
-        console.log("files", JSON.stringify(files, null, 2));
+        //console.log("files", JSON.stringify(files, null, 2));
       }
     }
     if (!ocrPath) {
