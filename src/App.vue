@@ -68,11 +68,7 @@
 
         <div style="max-height: 600px; overflow: scroll">
           <div v-for="(file, index) in displayFiles" :key="index">
-            <div
-              v-show="!search || processSearch(file)"
-              style="cursor: pointer; padding: 4px"
-              @click="process(file)"
-            >
+            <div style="cursor: pointer; padding: 4px" @click="process(file)">
               <span v-show="processed(file)"
                 >&nbsp;
                 <u style="color: #0f0" @click="showText(file)">T</u>
@@ -125,6 +121,39 @@ import { createWorker, PSM, OEM } from "tesseract.js";
 export default {
   name: "app",
   computed: {
+    displayFiles() {
+      if (this.refresh) {
+        this.refresh = false;
+      }
+      let search = this.search;
+      if (search) {
+        let results = [];
+        search = search.toLowerCase();
+        let localStorage = window.localStorage;
+        if (localStorage) {
+          for (var i = 0; i < this.files.length; ++i) {
+            let file = this.files[i];
+            let key = this.ocrPath + "\\" + file;
+            if (localStorage) {
+              let text = localStorage.getItem(key);
+              if (text) {
+                if (text.toLowerCase().includes(search.toLowerCase())) {
+                  results.push(file);
+                }
+              }
+            }
+          }
+        }
+        return results;
+      } else {
+        let results = [];
+        for (var i = 0; i < this.files.length; ++i) {
+          let file = this.files[i];
+          results.push(file);
+        }
+        return results;
+      }
+    },
     countProcessed() {
       if (this.refresh) {
         this.refresh = false;
@@ -201,11 +230,6 @@ export default {
                       if (refThis.autoIndex != -1) {
                         refThis.autoProcess();
                       }
-                      var files = refThis.files;
-                      refThis.displayFiles = [];
-                      setTimeout(function () {
-                        refThis.displayFiles = files;
-                      }, 0);
                     };
                     if (refThis.processedKey(json.src)) {
                       refThis.progress = 100;
@@ -223,12 +247,8 @@ export default {
                         "KEY_OCR_FILES",
                         JSON.stringify(json.files)
                       );
-                      refThis.refresh = true; //refresh UI
                     }
-                    this.displayFiles = [];
-                    setTimeout(function () {
-                      refThis.displayFiles = json.files;
-                    }, 0);
+                    refThis.refresh = true; //refresh UI
                     break;
                 }
               }
@@ -252,7 +272,6 @@ export default {
       console.log("Scan Files");
       this.autoIndex = -1;
       this.files = [];
-      this.displayFiles = [];
 
       //console.log("streamSocket", this.streamSocket);
       if (!this.streamSocket) {
@@ -327,10 +346,6 @@ export default {
                       localStorage.setItem(key, json[key]);
                     }
                     refThis.refresh = true; //refresh UI
-                    refThis.displayFiles = [];
-                    setTimeout(function () {
-                      refThis.displayFiles = refThis.files;
-                    }, 0);
                   }
                 }
               };
@@ -372,26 +387,9 @@ export default {
         }
       }
     },
-    processSearch: function (file) {
-      let key = this.ocrPath + "\\" + file;
-      let localStorage = window.localStorage;
-      if (localStorage) {
-        let text = localStorage.getItem(key);
-        if (text) {
-          return text.toLowerCase().includes(this.search.toLowerCase());
-        }
-      }
-      return false;
-    },
     filterHandler: function (evt) {
       this.search = evt.target.value;
-      console.log(this.search);
-      var refThis = this;
-      var files = refThis.files;
-      refThis.displayFiles = [];
-      setTimeout(function () {
-        refThis.displayFiles = files;
-      }, 0);
+      //console.log(this.search);
     },
     showText: function (file) {
       let key = this.ocrPath + "\\" + file;
@@ -467,7 +465,6 @@ export default {
       streamSocket: undefined,
       ocrPath: ocrPath,
       files: files,
-      displayFiles: files,
       autoIndex: -1,
       search: undefined,
       progress: 0,
