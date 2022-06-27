@@ -36,7 +36,12 @@
         <button @click="autoScan">Auto</button>
       </div>
 
-      <div v-for="(file, index) in files" :key="index" style="padding: 4px">
+      <div
+        v-for="(file, index) in files"
+        :key="index"
+        style="padding: 4px"
+        v-if="file.endsWith('.png')"
+      >
         <button @click="process(file)">Process</button>
         <span v-show="processed(file)"
           >&nbsp;
