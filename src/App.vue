@@ -64,7 +64,7 @@
       </div>
 
       <div style="background: #002; padding: 10px">
-        <div>FILES: ({{ this.files.length }})</div>
+        <div>FILES: ({{ this.countProcessed }} / {{ this.files.length }})</div>
 
         <div style="max-height: 600px; overflow: scroll">
           <div v-for="(file, index) in displayFiles" :key="index">
@@ -124,6 +124,25 @@ import { createWorker, PSM, OEM } from "tesseract.js";
 
 export default {
   name: "app",
+  computed: {
+    countProcessed() {
+      if (this.refresh) {
+        this.refresh = false;
+      }
+      let count = 0;
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        for (let i = 0; i < this.files.length; ++i) {
+          let file = this.files[i];
+          let key = this.ocrPath + "\\" + file;
+          if (localStorage.getItem(key)) {
+            ++count;
+          }
+        }
+      }
+      return count;
+    },
+  },
   methods: {
     changeHandler: function (evt) {
       //console.log("path:", evt.target.value);
@@ -177,6 +196,7 @@ export default {
                       let localStorage = window.localStorage;
                       if (localStorage) {
                         localStorage.setItem(key, text);
+                        refThis.refresh = true; //refresh UI
                       }
                       if (refThis.autoIndex != -1) {
                         refThis.autoProcess();
@@ -203,6 +223,7 @@ export default {
                         "KEY_OCR_FILES",
                         JSON.stringify(json.files)
                       );
+                      refThis.refresh = true; //refresh UI
                     }
                     this.displayFiles = [];
                     setTimeout(function () {
@@ -305,6 +326,7 @@ export default {
                       //console.log("key", key);
                       localStorage.setItem(key, json[key]);
                     }
+                    refThis.refresh = true; //refresh UI
                     refThis.displayFiles = [];
                     setTimeout(function () {
                       refThis.displayFiles = refThis.files;
@@ -450,6 +472,7 @@ export default {
       search: undefined,
       progress: 0,
       worker: worker,
+      refresh: false,
     };
   },
 };
