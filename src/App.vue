@@ -57,7 +57,18 @@
           <button style="margin: 5px; padding: 10px" @click="scanFolder">
             Scan Folder For Images
           </button>
-          <button style="margin: 5px; padding: 10px" @click="autoProcess">
+          <button
+            v-if="autoIndex == -1"
+            style="margin: 5px; padding: 10px"
+            @click="autoProcess"
+          >
+            Auto Process Files
+          </button>
+          <button
+            v-else
+            style="margin: 5px; padding: 10px; background: green; color: white"
+            @click="autoProcess"
+          >
             Auto Process Files
           </button>
         </center>
