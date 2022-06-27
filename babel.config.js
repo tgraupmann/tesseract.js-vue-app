@@ -43,18 +43,25 @@ wss.on('connection', function connection(ws) {
               };
               const fse = require("fs-extra");
               fse.readdir(json.path, (err, dir) => {
-                console.log('readdir dir', dir);
-                for (let filename of dir) {
-                  console.log('readdir filename', filename);
-                  if (filename.endsWith('.png')) {
-                    results.files.push(filename);
+                if (err) {
+                  console.error('Unable to readdir', json.path);
+                  return;
+                } else if (!dir) {
+                  console.error('Unable to readdir', json.path);
+                } else {
+                  console.log('readdir dir', dir);
+                  for (let filename of dir) {
+                    console.log('readdir filename', filename);
+                    if (filename.endsWith('.png')) {
+                      results.files.push(filename);
+                    }
                   }
+                  //console.log('send', JSON.stringify(results, null, 2));
+                  ws.send(JSON.stringify(results));
                 }
-                //console.log('send', JSON.stringify(results, null, 2));
-                ws.send(JSON.stringify(results));
               });
             }
-          } catch {}
+          } catch { }
           break;
       }
     }

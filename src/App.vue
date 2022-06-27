@@ -251,15 +251,15 @@ export default {
                     break;
                   case "readdir":
                     //console.log("json", JSON.stringify(json, null, 2));
-                    this.files = json.files;
+                    refThis.files = json.files;
+                    refThis.refresh = true; //refresh UI
                     let localStorage = window.localStorage;
                     if (localStorage) {
                       localStorage.setItem(
                         "KEY_OCR_FILES",
-                        JSON.stringify(json.files)
+                        JSON.stringify(refThis.files)
                       );
                     }
-                    refThis.refresh = true; //refresh UI
                     break;
                 }
               }
