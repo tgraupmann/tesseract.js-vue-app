@@ -30,11 +30,10 @@
       </center>
       <div>FILES:</div>
 
-      <div v-for="(file, index) in files" :key="index" style="padding: 4px">
-        <button @click="process(file)">Process</button>
+      <div v-for="(file, index) in files" :key="index" style="cursor: pointer; background: #003333; padding: 4px" @click="process(file)">
         <span v-show="processed(file)"
           >&nbsp;
-          <u style="cursor: pointer; color: #0f0" @click="showText(file)">T</u>
+          <u style="color: #0f0" @click="showText(file)">T</u>
         </span>
         &nbsp;
         <u>{{ file }}</u>
@@ -124,7 +123,9 @@ export default {
                         refThis.files = files;
                       }, 0);
                     };
-                    recognize();
+                    if (!refThis.processedKey(json.src)) {
+                      recognize();
+                    }
                     break;
                   case "readdir":
                     //console.log("json", JSON.stringify(json, null, 2));
@@ -189,8 +190,7 @@ export default {
         break;
       }
     },
-    processed: function (file) {
-      let key = this.ocrPath + "\\" + file;
+    processedKey: function (key) {
       let localStorage = window.localStorage;
       if (localStorage) {
         if (localStorage.getItem(key)) {
@@ -198,6 +198,10 @@ export default {
         }
       }
       return false;
+    },
+    processed: function (file) {
+      let key = this.ocrPath + "\\" + file;
+      return this.processedKey(key);
     },
     showText: function (file) {
       let key = this.ocrPath + "\\" + file;
@@ -210,15 +214,25 @@ export default {
       }
     },
     process: function (file) {
-      let src = this.ocrPath + "\\" + file;
-      console.log("src", src);
-
       let txtResult = document.getElementById("txtResult");
-      txtResult.value = "Processing... " + src;
+
+      let key = this.ocrPath + "\\" + file;
+      let localStorage = window.localStorage;
+      let text = undefined;
+      if (localStorage) {
+        text = localStorage.getItem(key);
+        if (text) {
+          txtResult.value = text;
+        }
+      }
+
+      if (!text) {
+        txtResult.value = "Processing... " + key;
+      }
 
       let sendJson = {
         method: "readfile",
-        src: src,
+        src: key,
       };
       console.log("send", JSON.stringify(sendJson));
       this.streamSocket.send(JSON.stringify(sendJson));
