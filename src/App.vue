@@ -7,12 +7,12 @@
       style="
         display: flex;
         flex-direction: column;
-        align-items: stretch;
-        justify-content: stretch;
         min-width: 400px;
+        row-gap: 10px;
+        background: #888;
       "
     >
-      <div style="background: #002">
+      <div style="background: #002; padding: 10px">
         <div>SEARCH:</div>
         <div>
           <input
@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <div style="background: #002">
+      <div style="background: #002; padding: 10px">
         <div>SCAN:</div>
         <div>Provide a path to search in order to process images to text.</div>
         <input
@@ -39,7 +39,7 @@
         />
       </div>
 
-      <div style="background: #002">
+      <div style="background: #002; padding: 10px">
         <center>
           <button style="margin: 5px; padding: 10px" @click="scanFolder">
             Scan Folder For Images
@@ -50,7 +50,7 @@
         </center>
       </div>
 
-      <div style="background: #002">
+      <div style="background: #002; padding: 10px">
         <div>FILES: ({{ this.files.length }})</div>
 
         <div style="max-height: 600px; overflow: scroll">
@@ -83,7 +83,14 @@
           background: #003;
         "
       >
-        <div style="display: flex; flex-direction: column; height: 100%">
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 10px;
+          "
+        >
           <progress
             style="width: 100%; height: 30px"
             min="0"
