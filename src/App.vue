@@ -1,6 +1,13 @@
 <template>
   <div id="app" style="display: flex; color: white">
-    <div style="background: #002; min-width: 500px; min-height: 500px; text-align: left">
+    <div
+      style="
+        background: #002;
+        min-width: 500px;
+        min-height: 500px;
+        text-align: left;
+      "
+    >
       <div>SEARCH:</div>
       <div>
         <input
@@ -35,7 +42,7 @@
           Auto Process Files
         </button>
       </center>
-      <div>FILES:</div>
+      <div>FILES: ({{ this.files.length }})</div>
 
       <div v-for="(file, index) in displayFiles" :key="index">
         <div
@@ -56,7 +63,13 @@
       <img id="txtImg" style="display: none" width="100%" />
       <textarea
         id="txtResult"
-        style="position: absolute; right: 0px; bottom: 0px; width: 50%; height: 50%"
+        style="
+          position: absolute;
+          right: 0px;
+          bottom: 0px;
+          width: 50%;
+          height: 50%;
+        "
         cols="40"
         rows="10"
       >
@@ -145,7 +158,10 @@ export default {
                     this.files = json.files;
                     let localStorage = window.localStorage;
                     if (localStorage) {
-                      localStorage.setItem("KEY_OCR_FILES", JSON.stringify(json.files));
+                      localStorage.setItem(
+                        "KEY_OCR_FILES",
+                        JSON.stringify(json.files)
+                      );
                     }
                     this.displayFiles = [];
                     setTimeout(function () {
@@ -229,13 +245,13 @@ export default {
       }
       return false;
     },
-    filterHandler: function(evt) {
+    filterHandler: function (evt) {
       this.search = evt.target.value;
       console.log(this.search);
       var refThis = this;
       var files = refThis.files;
       refThis.displayFiles = [];
-      setTimeout(function() {
+      setTimeout(function () {
         refThis.displayFiles = files;
       }, 0);
     },
