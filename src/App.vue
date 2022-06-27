@@ -386,7 +386,7 @@ export default {
             "data:text/plain;charset=utf-8," +
               encodeURIComponent(JSON.stringify(results, null, 2))
           );
-          anchorDownload.setAttribute("download", "ocr.json");
+          anchorDownload.setAttribute("download", "_ocr.json");
 
           if (document.createEvent) {
             var event = document.createEvent("MouseEvents");
