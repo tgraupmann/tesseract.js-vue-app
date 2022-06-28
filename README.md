@@ -4,6 +4,8 @@ This app scans the specified folder for images and performs OCR saving the text 
 
 ![image_1](images/image_1.png)
 
+This project was forked from the original [jeromewu/tesseract.js-vue-app](https://github.com/jeromewu/tesseract.js-vue-app) tesseract vue demo.
+
 ## Project setup
 
 ```
