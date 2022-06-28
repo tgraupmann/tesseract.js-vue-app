@@ -197,11 +197,12 @@ export default {
                 switch (json.method) {
                   case "readfile":
                     const img = document.getElementById("txtImg");
-                    console.log("Loading src", json.src);
+                    console.log("Loading src", json.src, json.data.length);
                     //console.log("data", json.data);
                     img.src = "data:image/png;base64," + json.data;
                     img.style.display = "";
                     var recognize = async function () {
+                      //console.log('start recognize');
                       const img = document.getElementById("txtImg");
                       //console.log(img);
                       await refThis.worker.load();
@@ -210,10 +211,14 @@ export default {
                       await refThis.worker.setParameters({
                         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
                       });
-                      const {
+                      //console.log('worker.recognize');
+                      let {
                         data: { text },
                       } = await refThis.worker.recognize(img);
-                      console.log(text);
+                      if (!text || text.trim().length == 0) {
+                        console.log('no text detected');
+                        text = '(none)';
+                      }
 
                       let txtResult = document.getElementById("txtResult");
                       txtResult.value = text;
@@ -234,7 +239,8 @@ export default {
                       refThis.progress = 0;
                       try {
                         recognize();
-                      } catch {
+                      } catch (e) {
+                        console.error("Exception processing file", json.src, e);
                         if (refThis.autoIndex != -1) {
                           refThis.autoProcess();
                         }
@@ -300,7 +306,7 @@ export default {
         if (this.processed(file)) {
           continue;
         }
-        console.log("Processing", i);
+        console.log("Processing", file);
         this.process(file);
         break;
       }
@@ -427,7 +433,7 @@ export default {
         method: "readfile",
         src: key,
       };
-      console.log("send", JSON.stringify(sendJson));
+      //console.log("send", JSON.stringify(sendJson));
       this.streamSocket.send(JSON.stringify(sendJson));
       // read bytes on server and receive on socket message
     },
