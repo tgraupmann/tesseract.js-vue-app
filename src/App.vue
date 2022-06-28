@@ -115,6 +115,10 @@
 /* eslint-disable */
 import { createWorker, PSM, OEM } from "tesseract.js";
 
+process.on("uncaughtException", (err) => {
+  logger.error(err.stack);
+});
+
 export default {
   name: "app",
   computed: {
@@ -216,8 +220,8 @@ export default {
                         data: { text },
                       } = await refThis.worker.recognize(img);
                       if (!text || text.trim().length == 0) {
-                        console.log('no text detected');
-                        text = '(none)';
+                        console.log("no text detected");
+                        text = "(none)";
                       }
 
                       let txtResult = document.getElementById("txtResult");
