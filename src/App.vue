@@ -116,7 +116,11 @@
 import { createWorker, PSM, OEM } from "tesseract.js";
 
 process.on("uncaughtException", (err) => {
-  logger.error(err.stack);
+  if (!err) {
+    console.error('process uncaughtException');
+  } else {
+    console.error('process uncaughtException stack', err.stack);
+  }
 });
 
 export default {
