@@ -232,7 +232,13 @@ export default {
                       refThis.progress = 100;
                     } else {
                       refThis.progress = 0;
-                      recognize();
+                      try {
+                        recognize();
+                      } catch {
+                        if (refThis.autoIndex != -1) {
+                          refThis.autoProcess();
+                        }
+                      }
                     }
                     break;
                   case "readdir":
