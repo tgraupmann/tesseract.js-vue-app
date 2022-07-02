@@ -137,21 +137,13 @@ export default {
       if (search) {
         let results = [];
         search = search.toLowerCase();
-        let localStorage = window.localStorage;
-        if (localStorage) {
-          for (var i = 0; i < this.files.length; ++i) {
-            let file = this.files[i];
-            let key = this.ocrPath + "\\" + file;
-            if (localStorage) {
-              let text = undefined;
-              try {
-                text = this.getItem(key);
-              } catch {}
-              if (text) {
-                if (text.toLowerCase().includes(search.toLowerCase())) {
-                  results.push(file);
-                }
-              }
+        for (var i = 0; i < this.files.length; ++i) {
+          let file = this.files[i];
+          let key = this.ocrPath + "\\" + file;
+          let text = this.getItem(key);
+          if (text) {
+            if (text.toLowerCase().includes(search.toLowerCase())) {
+              results.push(file);
             }
           }
         }
@@ -175,11 +167,9 @@ export default {
         for (let i = 0; i < this.files.length; ++i) {
           let file = this.files[i];
           let key = this.ocrPath + "\\" + file;
-          try {
-            if (this.getItem(key)) {
-              ++count;
-            }
-          } catch {}
+          if (this.getItem(key)) {
+            ++count;
+          }
         }
       }
       return count;
@@ -257,13 +247,8 @@ export default {
                       txtResult.value = text;
 
                       let key = json.src;
-                      let localStorage = window.localStorage;
-                      if (localStorage) {
-                        try {
-                          this.setItem(key, text);
-                        } catch {}
-                        refThis.refresh = true; //refresh UI
-                      }
+                      refThis.setItem(key, text);
+                      refThis.refresh = true; //refresh UI
                       if (refThis.autoIndex != -1) {
                         refThis.autoProcess();
                       }
@@ -349,13 +334,8 @@ export default {
       }
     },
     processedKey: function (key) {
-      let localStorage = window.localStorage;
-      if (localStorage) {
-        try {
-          if (this.getItem(key)) {
-            return true;
-          }
-        } catch {}
+      if (this.getItem(key)) {
+        return true;
       }
       return false;
     },
@@ -391,9 +371,7 @@ export default {
                     for (let i = 0; i < keys.length; ++i) {
                       let key = keys[i];
                       //console.log("key", key);
-                      try {
-                        this.setItem(key, json[key]);
-                      } catch {}
+                      refThis.setItem(key, json[key]);
                     }
                     refThis.refresh = true; //refresh UI
                   }
@@ -443,34 +421,22 @@ export default {
     },
     showText: function (file) {
       let key = this.ocrPath + "\\" + file;
-      let localStorage = window.localStorage;
-      if (localStorage) {
-        try {
-          if (this.getItem(key)) {
-            let txtResult = document.getElementById("txtResult");
-            txtResult.value = this.getItem(key);
-          }
-        } catch {}
+      if (this.getItem(key)) {
+        let txtResult = document.getElementById("txtResult");
+        txtResult.value = this.getItem(key);
       }
     },
     process: function (file) {
+      console.log("process", file);
       this.progress = 0;
 
       let txtResult = document.getElementById("txtResult");
 
       let key = this.ocrPath + "\\" + file;
-      let localStorage = window.localStorage;
-      let text = undefined;
-      if (localStorage) {
-        try {
-          text = this.getItem(key);
-          if (text) {
-            txtResult.value = text;
-          }
-        } catch {}
-      }
-
-      if (!text) {
+      let text = this.getItem(key);
+      if (text) {
+        txtResult.value = text;
+      } else {
         txtResult.value = "Processing... " + key;
       }
 
