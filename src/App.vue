@@ -29,6 +29,9 @@
         <center>
           <button style="margin: 5px; padding: 10px" @click="textImport">Import</button>
           <button style="margin: 5px; padding: 10px" @click="textExport">Export</button>
+          <button style="margin: 5px; padding: 10px" @click="clearCache">
+            Clear Cache
+          </button>
         </center>
       </div>
 
@@ -117,9 +120,9 @@ import { createWorker, PSM, OEM } from "tesseract.js";
 
 process.on("uncaughtException", (err) => {
   if (!err) {
-    console.error('process uncaughtException');
+    console.error("process uncaughtException");
   } else {
-    console.error('process uncaughtException stack', err.stack);
+    console.error("process uncaughtException stack", err.stack);
   }
 });
 
@@ -140,7 +143,10 @@ export default {
             let file = this.files[i];
             let key = this.ocrPath + "\\" + file;
             if (localStorage) {
-              let text = localStorage.getItem(key);
+              let text = undefined;
+              try {
+                text = this.getItem(key);
+              } catch {}
               if (text) {
                 if (text.toLowerCase().includes(search.toLowerCase())) {
                   results.push(file);
@@ -169,21 +175,40 @@ export default {
         for (let i = 0; i < this.files.length; ++i) {
           let file = this.files[i];
           let key = this.ocrPath + "\\" + file;
-          if (localStorage.getItem(key)) {
-            ++count;
-          }
+          try {
+            if (this.getItem(key)) {
+              ++count;
+            }
+          } catch {}
         }
       }
       return count;
     },
   },
   methods: {
+    clearCache: function () {
+      let localStorage = window.localStorage;
+      if (localStorage) {
+        localStorage.clear();
+      }
+    },
+
+    getItem: function (key) {
+      return this.textStorage[key];
+    },
+
+    setItem: function (key, val) {
+      this.textStorage[key] = val;
+    },
+
     changeHandler: function (evt) {
       //console.log("path:", evt.target.value);
       this.ocrPath = evt.target.value;
       let localStorage = window.localStorage;
       if (localStorage) {
-        localStorage.setItem("KEY_OCR_PATH", this.ocrPath);
+        try {
+          localStorage.setItem("KEY_OCR_PATH", this.ocrPath);
+        } catch {}
       }
     },
 
@@ -234,7 +259,9 @@ export default {
                       let key = json.src;
                       let localStorage = window.localStorage;
                       if (localStorage) {
-                        localStorage.setItem(key, text);
+                        try {
+                          this.setItem(key, text);
+                        } catch {}
                         refThis.refresh = true; //refresh UI
                       }
                       if (refThis.autoIndex != -1) {
@@ -261,10 +288,12 @@ export default {
                     refThis.refresh = true; //refresh UI
                     let localStorage = window.localStorage;
                     if (localStorage) {
-                      localStorage.setItem(
-                        "KEY_OCR_FILES",
-                        JSON.stringify(refThis.files)
-                      );
+                      try {
+                        localStorage.setItem(
+                          "KEY_OCR_FILES",
+                          JSON.stringify(refThis.files)
+                        );
+                      } catch {}
                     }
                     break;
                 }
@@ -322,9 +351,11 @@ export default {
     processedKey: function (key) {
       let localStorage = window.localStorage;
       if (localStorage) {
-        if (localStorage.getItem(key)) {
-          return true;
-        }
+        try {
+          if (this.getItem(key)) {
+            return true;
+          }
+        } catch {}
       }
       return false;
     },
@@ -360,7 +391,9 @@ export default {
                     for (let i = 0; i < keys.length; ++i) {
                       let key = keys[i];
                       //console.log("key", key);
-                      localStorage.setItem(key, json[key]);
+                      try {
+                        this.setItem(key, json[key]);
+                      } catch {}
                     }
                     refThis.refresh = true; //refresh UI
                   }
@@ -379,7 +412,7 @@ export default {
         for (let i = 0; i < this.files.length; ++i) {
           let file = this.files[i];
           let key = this.ocrPath + "\\" + file;
-          let text = localStorage.getItem(key);
+          let text = this.getItem(key);
           if (text) {
             results[key] = text;
           }
@@ -412,10 +445,12 @@ export default {
       let key = this.ocrPath + "\\" + file;
       let localStorage = window.localStorage;
       if (localStorage) {
-        if (localStorage.getItem(key)) {
-          let txtResult = document.getElementById("txtResult");
-          txtResult.value = localStorage.getItem(key);
-        }
+        try {
+          if (this.getItem(key)) {
+            let txtResult = document.getElementById("txtResult");
+            txtResult.value = this.getItem(key);
+          }
+        } catch {}
       }
     },
     process: function (file) {
@@ -427,10 +462,12 @@ export default {
       let localStorage = window.localStorage;
       let text = undefined;
       if (localStorage) {
-        text = localStorage.getItem(key);
-        if (text) {
-          txtResult.value = text;
-        }
+        try {
+          text = this.getItem(key);
+          if (text) {
+            txtResult.value = text;
+          }
+        } catch {}
       }
 
       if (!text) {
@@ -454,8 +491,13 @@ export default {
     let localStorage = window.localStorage;
     let files = [];
     if (localStorage) {
-      ocrPath = localStorage.getItem("KEY_OCR_PATH");
-      let strFiles = localStorage.getItem("KEY_OCR_FILES");
+      try {
+        ocrPath = localStorage.getItem("KEY_OCR_PATH");
+      } catch {}
+      let strFiles = undefined;
+      try {
+        strFiles = localStorage.getItem("KEY_OCR_FILES");
+      } catch {}
       try {
         if (strFiles) {
           files = JSON.parse(strFiles);
@@ -482,6 +524,7 @@ export default {
       streamSocket: undefined,
       ocrPath: ocrPath,
       files: files,
+      textStorage: {},
       autoIndex: -1,
       search: undefined,
       progress: 0,
