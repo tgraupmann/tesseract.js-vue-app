@@ -219,6 +219,11 @@ export default {
               if (json) {
                 switch (json.method) {
                   case "readfile":
+                    if (json.src.endsWith("\\_ocr.json")) {
+                      //console.log("textOcrInput", json.data);
+                      refThis.textOcrInput(json.data);
+                      return;
+                    }
                     const img = document.getElementById("txtImg");
                     console.log("Loading src", json.src, json.data.length);
                     //console.log("data", json.data);
@@ -280,11 +285,30 @@ export default {
                         );
                       } catch {}
                     }
+
+                    // import text if available
+                    let key = refThis.ocrPath + "\\_ocr.json";
+                    let sendJson = {
+                      method: "readfile",
+                      src: key,
+                    };
+                    console.log("send", JSON.stringify(sendJson));
+                    refThis.streamSocket.send(JSON.stringify(sendJson));
+
                     break;
                 }
               }
             }
           };
+
+          // import text if available
+          let key = refThis.ocrPath + "\\_ocr.json";
+          let sendJson = {
+            method: "readfile",
+            src: key,
+          };
+          console.log("send", JSON.stringify(sendJson));
+          streamSocket.send(JSON.stringify(sendJson));
         };
         streamSocket.onclose = function (event) {
           refThis.streamSocket = undefined;
@@ -343,6 +367,19 @@ export default {
       let key = this.ocrPath + "\\" + file;
       return this.processedKey(key);
     },
+    textOcrInput: function (content) {
+      //console.log(content);
+      let json = JSON.parse(content);
+      if (json) {
+        let keys = Object.keys(json);
+        for (let i = 0; i < keys.length; ++i) {
+          let key = keys[i];
+          //console.log("key", key);
+          this.setItem(key, json[key]);
+        }
+        this.refresh = true; //refresh UI
+      }
+    },
     textImport: function () {
       let refThis = this;
       let inputImport = document.getElementById("inputImport");
@@ -356,25 +393,9 @@ export default {
               reader.readAsText(file, "UTF-8");
               // read file
               reader.onload = (readerEvent) => {
-                let localStorage = window.localStorage;
-                if (
-                  readerEvent &&
-                  readerEvent.target &&
-                  readerEvent.target.result &&
-                  localStorage
-                ) {
+                if (readerEvent && readerEvent.target && readerEvent.target.result) {
                   let content = readerEvent.target.result;
-                  //console.log(content);
-                  let json = JSON.parse(content);
-                  if (json) {
-                    let keys = Object.keys(json);
-                    for (let i = 0; i < keys.length; ++i) {
-                      let key = keys[i];
-                      //console.log("key", key);
-                      refThis.setItem(key, json[key]);
-                    }
-                    refThis.refresh = true; //refresh UI
-                  }
+                  refThis.textOcrInput(content);
                 }
               };
             }
@@ -446,7 +467,6 @@ export default {
       };
       //console.log("send", JSON.stringify(sendJson));
       this.streamSocket.send(JSON.stringify(sendJson));
-      // read bytes on server and receive on socket message
     },
   },
   created() {

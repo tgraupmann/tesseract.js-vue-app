@@ -19,11 +19,20 @@ wss.on('connection', function connection(ws) {
               const fse = require("fs-extra");
               fse.readFile(json.src, function (err, data) {
                 if (!err) {
-                  let result = {
-                    "method": json.method,
-                    "src": json.src,
-                    "data": data.toString('base64')
-                  };
+                  let result;
+                  if (json.src.endsWith("\\_ocr.json")) {
+                    result = {
+                      "method": json.method,
+                      "src": json.src,
+                      "data": data.toString()
+                    };
+                  } else {
+                    result = {
+                      "method": json.method,
+                      "src": json.src,
+                      "data": data.toString('base64')
+                    };
+                  }
 
                   //console.log('send', JSON.stringify(result, null, 2));
                   ws.send(JSON.stringify(result));
